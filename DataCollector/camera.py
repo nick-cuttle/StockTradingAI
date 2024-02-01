@@ -14,6 +14,10 @@ class Camera:
     Y_RES = screensize[1]
 
     def __init__(self):
+        self.image_files = os.listdir("./images")
+        self.label_files = os.listdir("./labels")
+        self.cur_file_index = 0
+
         self.c_key_pressed = False
         self.enter_key_pressed = False
         self.chart_pic = None
@@ -21,6 +25,21 @@ class Camera:
         self.saved_pic = None
         self.saved_sc = None
         
+
+    def init_files(self):
+        self.image_files = os.listdir("./images")
+        self.label_files = os.listdir("./labels")
+
+    
+    def get_cur_labels(self):
+        file = open( "./labels/" + self.label_files[self.cur_file_index])
+        labels = []
+        for line in file:
+            if line.isspace():
+                continue
+            labels.append(line[:-1])
+        file.close()
+        return labels
 
     def handle_c_key(self, g):
         g.capture_text = ""
@@ -88,12 +107,12 @@ class Camera:
         if self.saved_sc == None or self.saved_pic == None:
             return
 
-        label = g.label_box.text.split(" ")[1]
+        label = g.dir_button.text.split(" ")[1]
         fcount = self.count_files()
         fname = "./labels/" + label + str(fcount + 1) + ".txt"
 
         label_file = open(fname, "w")
-        label_file.write(g.label_box.text + "\n")
+        label_file.write(g.dir_button.text + "\n")
         # label_file.write(g.risk_box.text + "\n")
         # label_file.write(g.reward_box.text + "\n")
 
