@@ -41,7 +41,7 @@ class Camera:
         file.close()
         return labels
 
-    def handle_c_key(self, g):
+    def capture_screen(self, g):
         g.capture_text = ""
         self.chart_sc = self.take_screenshot(0, 0, Camera.X_RES, Camera.Y_RES)
         self.chart_pic = self.convert_screenshot(self.chart_sc)
@@ -120,3 +120,5 @@ class Camera:
 
         fname = "./images/" + label + str(fcount + 1) + ".png"
         self.saved_sc.save(fname)
+
+        g.init_menu_screen()

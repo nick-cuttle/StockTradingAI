@@ -25,7 +25,7 @@ if __name__ == "__main__":
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_c] and not g.camera.c_key_pressed:
-                if g.state == Graphics.State.TUTORIAL_SCREEN:
+                if g.state == Graphics.State.MENU_SCREEN:
                     g.camera.handle_c_key(g)
             elif not keys[pygame.K_c]:
                 g.camera.c_key_pressed = False

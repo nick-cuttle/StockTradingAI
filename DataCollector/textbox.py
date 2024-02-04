@@ -2,7 +2,7 @@ import pygame
 
 class TextBox:
     def __init__(self, rect, text='', color_inactive=pygame.Color('gray'),
-                 color_active=pygame.Color('white'), is_button=False, click_callback=None):
+                 color_active=pygame.Color('white'), is_button=False, click_callback=None, image=None):
         self.rect = pygame.Rect(rect)
         self.color_inactive = color_inactive
         self.color_active = color_active
@@ -13,6 +13,10 @@ class TextBox:
         self.active = False
         self.is_button = is_button
         self.click_callback = click_callback
+        self.image = image
+        if self.image != None:
+            self.rect.width = self.image.get_width()
+            self.rect.height = self.image.get_height()
 
     def handle_events(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -28,7 +32,7 @@ class TextBox:
             self.color = self.color_active if self.active else self.color_inactive
 
 
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN and self.image == None:
             if self.active:
                 if event.key == pygame.K_RETURN:
                     print(self.text)
@@ -42,10 +46,16 @@ class TextBox:
         self.update()
 
     def update(self):
-        width = max(200, self.txt_surface.get_width() + 10)
-        self.rect.w = width
+        if self.image == None:
+            width = max(200, self.txt_surface.get_width() + 10)
+            self.rect.w = width
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect, 0)
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)
-        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
+
+        if self.image != None:
+            screen.blit(self.image, (self.rect.x, self.rect.y))
+        
+        else:
+            pygame.draw.rect(screen, self.color, self.rect, 0)
+            pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)
+            screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))

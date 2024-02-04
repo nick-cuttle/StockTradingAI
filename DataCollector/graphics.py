@@ -6,25 +6,23 @@ from camera import Camera
 from scrollbox import ScrollBox
 from textbox import TextBox
 from croprectangle import CropRectangle
+import os
 
 class Graphics:
 
     class State(Enum):
-        TUTORIAL_SCREEN = auto()
+        MENU_SCREEN = auto()
         CROP_SCREEN = auto()
         LABEL_SCREEN = auto()
         EDIT_SCREEN = auto()
         SELECT_SCREEN = auto()
-
 
     def __init__(self):
 
 
         
         self.tutorial_font = pygame.font.Font(None, 36)
-        self.capture_text = "Hit 'C' to capture a screenshot of the screen."
-        self.capture_surface = self.tutorial_font.render(self.capture_text, True, (0,0,0))
-        self.state = Graphics.State(Graphics.State.TUTORIAL_SCREEN)
+        self.state = Graphics.State(Graphics.State.MENU_SCREEN)
 
         self.camera = Camera()
 
@@ -35,7 +33,7 @@ class Graphics:
         self.next_button = TextBox((0, 0, 100, 50), '>',  is_button=True, click_callback=lambda: self.next_button_click())
         self.prev_button = TextBox((0, 0, 100, 50), '<',  is_button=True, click_callback=lambda: self.prev_button_click())
 
-        #
+        
         self.scroll_box = ScrollBox(0, 0, self.camera.X_RES, self.camera.Y_RES)
 
 
@@ -48,26 +46,46 @@ class Graphics:
                                  color_active=pygame.Color('green'), 
                                  click_callback=lambda: self.camera.save_data(self))
         
+        self.icon_size = 100
+        cam_img = pygame.image.load("./pics/camera.jpg")
+        cam_img = pygame.transform.scale(cam_img, (self.icon_size, self.icon_size))
+        self.crop_button = TextBox((0, 0, 0, 0), '', is_button=True, image=cam_img, click_callback=lambda: self.camera.capture_screen(self))
+        
+        edit_img = pygame.image.load("./pics/edit_photo.png")
+        edit_img = pygame.transform.scale(edit_img, (self.icon_size, self.icon_size))
+        self.edit_button = TextBox((0, 0, 0, 0), '', is_button=True, image=edit_img, click_callback=lambda: self.init_edit_screen())
+        
+        
+        folder_img = pygame.image.load("./pics/folder_icon.png")
+        folder_img = pygame.transform.scale(folder_img, (self.icon_size, self.icon_size))
+        self.folder_button = TextBox((0, 0, 0, 0), '', is_button=True, image=folder_img, click_callback=lambda: self.init_select_screen())
+        
         self.e_key_pressed = False
         self.s_key_pressed = False
         self.label_boxes = [self.dir_button]
         
         self.edit_boxes = self.label_boxes.copy() + [self.prev_button, self.next_button, self.save_box]
         self.text_boxes = [self.dir_button, self.save_box]
+        self.menu_boxes = [self.folder_button, self.edit_button, self.crop_button]
 
         
 
-        self.width = self.capture_surface.get_width()
-        self.height = self.capture_surface.get_height()
-        # self.screen = pygame.display.set_mode((self.width, self.height))
-        self.screen = pygame.display.set_mode((1920, 1080))
+        self.width = 0
+        self.height = 0
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "100,100"
+        self.screen = pygame.display.set_mode((Camera.X_RES, Camera.Y_RES))
         self.window = Window.from_display_module()
 
         pygame.display.set_caption("Data Collector")
 
+        self.init_menu_screen()
+
+
+
     def dir_button_click(self):
         u = "DIRECTION: Up"
         d = "DIRECTION: Down"
+        n = "DIRECTION: Neutral"
         if self.dir_button.text.find("Up") != -1:
             self.dir_button.text = d  
         else:
@@ -76,13 +94,40 @@ class Graphics:
         self.dir_button.txt_surface = self.dir_button.font.render(self.dir_button.text, True, (0, 0, 0))
 
 
+    def init_menu_screen(self):
 
 
-    def draw_tutorial_screen(self):
-        if self.state == Graphics.State.TUTORIAL_SCREEN:
+        self.state = Graphics.State.MENU_SCREEN
+        spacing = 10
+        w = self.icon_size + 2 * spacing
+        self.width = w
+        h = len(self.menu_boxes) * self.icon_size + ((len(self.menu_boxes) + 1) * spacing)
+        self.height = h
+        pygame.display.set_mode((w, h))
+
+        x = spacing
+        y = spacing
+
+        for box in self.menu_boxes:
+            box.rect.x = x
+            box.rect.y = y
+            y += self.icon_size + spacing
+        # self.folder_button.rect.x = Camera.X_RES // 2
+        # self.folder_button.rect.y = Camera.Y_RES // 2
+
+        # self.edit_button.rect.x = 0
+        # self.edit_button.rect.y = 0
+
+        # self.crop_button.rect.x = 0
+        # self.edit_button.rect.y = 200
+
+
+    def draw_menu_screen(self):
+        if self.state == Graphics.State.MENU_SCREEN:
             self.screen.fill((255, 255 ,255))
-            x, y = (self.width // 2 - self.capture_surface.get_width() // 2, self.height // 2 - self.capture_surface.get_height() // 2)
-            self.screen.blit(self.capture_surface, (x, y))
+            self.folder_button.draw(self.screen)
+            self.edit_button.draw(self.screen)
+            self.crop_button.draw(self.screen)
 
 
     
@@ -206,7 +251,7 @@ class Graphics:
     def init_select_screen(self):
         self.scroll_box.clear()
         self.state = Graphics.State.SELECT_SCREEN
-        pygame.display.set_mode((self.camera.X_RES, self.camera.Y_RES))
+        pygame.display.set_mode((self.camera.X_RES, self.camera.Y_RES), pygame.FULLSCREEN)
         self.camera.init_files()
         
 
@@ -225,7 +270,7 @@ class Graphics:
             
         
     def draw(self):
-        self.draw_tutorial_screen()
+        self.draw_menu_screen()
         self.draw_crop_screen()
         self.draw_label_screen()
         self.draw_edit_screen()
@@ -235,7 +280,11 @@ class Graphics:
 
     
     def handle_events(self, event):
-
+        
+        if self.state == Graphics.State.MENU_SCREEN:
+            self.folder_button.handle_events(event)
+            self.edit_button.handle_events(event)
+            self.crop_button.handle_events(event)
                 
         if self.state == Graphics.State.CROP_SCREEN:
             self.sc_box.handle_events(event)
