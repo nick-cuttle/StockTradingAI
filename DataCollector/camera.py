@@ -115,6 +115,7 @@ class Camera:
         label_file.write(g.dir_button.text + "\n")
         # label_file.write(g.risk_box.text + "\n")
         # label_file.write(g.reward_box.text + "\n")
+        label_file.write(g.time_button.text + "_" + g.time_int.text + "\n")
 
         label_file.close()
 

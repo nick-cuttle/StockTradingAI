@@ -36,10 +36,13 @@ class Graphics:
         
         self.scroll_box = ScrollBox(0, 0, self.camera.X_RES, self.camera.Y_RES)
 
+        self.time_ints = ["MIN", "HOUR", "DAY", "WEEK", "MONTH", "YEAR"]
+
 
         self.dir_button = TextBox((0, 0, 100, 50), 'DIRECTION: Up',  is_button=True, click_callback=lambda: self.dir_button_click())
-        self.risk_box = TextBox((0, 0, 100, 50), "RISK: ")
-        self.reward_box = TextBox((0, 0, 100, 50), "REWARD: ")
+        self.time_button = TextBox((0, 0, 100, 50), "TIME: ")
+        self.time_int = TextBox((0, 0, 100, 50), 'MIN',  is_button=True, click_callback=lambda: self.cycle_time_int())
+        self.time_index = 0
 
         self.save_box = TextBox((0, 0, 100, 50), "Save", is_button=True,
                                  color_inactive=pygame.Color('green'), 
@@ -62,10 +65,10 @@ class Graphics:
         
         self.e_key_pressed = False
         self.s_key_pressed = False
-        self.label_boxes = [self.dir_button]
+        self.label_boxes = [self.dir_button, self.time_button, self.time_int]
         
         self.edit_boxes = self.label_boxes.copy() + [self.prev_button, self.next_button, self.save_box]
-        self.text_boxes = [self.dir_button, self.save_box]
+        self.text_boxes = [self.dir_button, self.time_button, self.time_int, self.save_box]
         self.menu_boxes = [self.folder_button, self.edit_button, self.crop_button]
 
         
@@ -80,6 +83,10 @@ class Graphics:
 
         self.init_menu_screen()
 
+    def cycle_time_int(self):
+        self.time_index = (self.time_index + 1) % len(self.time_ints)
+        self.time_int.text = self.time_ints[self.time_index]
+        self.time_int.txt_surface = self.time_int.font.render(self.time_int.text, True, (0, 0, 0))
 
 
     def dir_button_click(self):
@@ -292,7 +299,7 @@ class Graphics:
         elif self.state == Graphics.State.EDIT_SCREEN:
             for box in self.edit_boxes:
                 box.handle_events(event)
-        else:
+        if self.state == Graphics.State.LABEL_SCREEN:
             for box in self.text_boxes:
                 box.handle_events(event)
         
