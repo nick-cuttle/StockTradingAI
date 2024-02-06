@@ -20,10 +20,13 @@ class Camera:
 
         self.c_key_pressed = False
         self.enter_key_pressed = False
+        self.esc_key_pressed = False
         self.chart_pic = None
         self.chart_sc = None
         self.saved_pic = None
         self.saved_sc = None
+        self.saved_pics = []
+        self.saved_scs = []
         
 
     def init_files(self):
@@ -97,29 +100,31 @@ class Camera:
         cropped_sc = self.chart_sc.crop((g.sc_box.rect.x, g.sc_box.rect.y, g.sc_box.rect.x + w, g.sc_box.rect.y + h))
         cropped_pic = self.convert_screenshot(cropped_sc)
 
-        self.saved_pic = cropped_pic
-        self.saved_sc = cropped_sc
-        g.init_label_screen(cropped_sc, cropped_pic)
+        self.saved_pics.append(cropped_pic)
+        self.saved_scs.append(cropped_sc)
+        #g.init_label_screen(cropped_sc, cropped_pic)
 
 
     def save_data(self, g):
         #save label file
-        if self.saved_sc == None or self.saved_pic == None:
+        if len(self.saved_pics) == 0 or len(self.saved_scs) == None:
             return
 
         label = g.dir_button.text.split(" ")[1]
         fcount = self.count_files()
-        fname = "./labels/" + label + str(fcount + 1) + ".txt"
+        fcount += 1
 
-        label_file = open(fname, "w")
-        label_file.write(g.dir_button.text + "\n")
-        # label_file.write(g.risk_box.text + "\n")
-        # label_file.write(g.reward_box.text + "\n")
-        label_file.write(g.time_button.text + "_" + g.time_int.text + "\n")
+        fname = "./labels/" + label + str(fcount) + ".txt"
+        for image in self.saved_scs:
+            label_file = open(fname, "w")
+            label_file.write(g.dir_button.text + "\n")
+            label_file.write(g.time_button.text + "_" + g.time_int.text + "\n")
+            label_file.close()
 
-        label_file.close()
+            fname = "./images/" + label + str(fcount) + ".png"
+            image.save(fname)
 
-        fname = "./images/" + label + str(fcount + 1) + ".png"
-        self.saved_sc.save(fname)
+            fcount += 1
+            fname = "./labels/" + label + str(fcount) + ".txt"
 
         g.init_menu_screen()

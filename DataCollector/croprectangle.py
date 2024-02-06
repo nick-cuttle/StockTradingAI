@@ -13,6 +13,7 @@ class CropRectangle:
         self.recreate = False
         self.start_rect = (x, y, width, height)
         self.start_mouse = (0, 0)
+        self.color = (255, 0, 0)
 
     def update(self):
         self.rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
@@ -110,7 +111,7 @@ class CropRectangle:
     
     def draw(self, screen):
 
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
+        pygame.draw.rect(screen, self.color, self.rect, 2)
 
 
         pos = (self.rect.x + self.rect.width // 4, self.rect.y + self.rect.height // 4, self.rect.width // 2, self.rect.height // 2)

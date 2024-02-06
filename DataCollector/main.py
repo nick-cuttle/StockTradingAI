@@ -43,10 +43,20 @@ if __name__ == "__main__":
                 g.s_key_pressed = False
 
             if keys[pygame.K_RETURN] and not g.camera.enter_key_pressed:
+                g.camera.enter_key_pressed = True
                 if g.state == Graphics.State.CROP_SCREEN:
+                    g.sc_box.color = (0, 255, 0)
                     g.camera.crop_pic(g)
             elif not keys[pygame.K_RETURN]:
                 g.camera.enter_key_pressed = False
+                g.sc_box.color = (255, 0, 0)
+
+            if keys[pygame.K_ESCAPE] and not g.camera.esc_key_pressed:
+                g.camera.esc_key_pressed = True
+                if g.state == Graphics.State.CROP_SCREEN:
+                    g.init_label_screen()
+            elif not keys[pygame.K_ESCAPE]:
+                g.camera.esc_key_pressed= False
                 
             g.draw()
 

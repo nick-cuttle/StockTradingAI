@@ -144,6 +144,8 @@ class Graphics:
         self.camera.chart_pic = pic
         pygame.display.set_mode(size, pygame.FULLSCREEN)
         self.state = Graphics.State.CROP_SCREEN
+        self.camera.saved_pics = []
+        self.camera.saved_scs = []
         
 
     
@@ -155,31 +157,24 @@ class Graphics:
             self.sc_box.draw(self.screen)
             
 
-    def init_label_screen(self, cropped_sc, cropped_pic):
+    def init_label_screen(self):
 
         pygame.display.set_caption("Data Collector")
         pixel_spacing = 10
-        dy = 0
+        h = pixel_spacing
         for box in self.text_boxes:
-            dy += box.rect.height + pixel_spacing
+            h += box.rect.height + pixel_spacing
         
-        self.width = cropped_sc.width
-        self.height = cropped_sc.height + dy
+        self.width = Camera.X_RES // 2
+        self.height = h
         pygame.display.set_mode((self.width, self.height))
 
-        # Set the position of the window
-
-        new_x = (Camera.X_RES - self.width) // 2
-        new_y = (Camera.Y_RES - self.height) // 2
 
         #store necessary state and image
         self.state = Graphics.State.LABEL_SCREEN
-        self.camera.saved_sc = cropped_sc
-        self.camera.saved_pic = cropped_pic
-        
 
         #get the correct x and y locations for all the textboxes.
-        b_y = cropped_sc.height
+        b_y = pixel_spacing
         for box in self.text_boxes:
             box.rect.y = b_y
             box.rect.x = (self.width - box.rect.width) // 2
@@ -188,7 +183,6 @@ class Graphics:
     def draw_label_screen(self):
         if self.state == Graphics.State.LABEL_SCREEN:
             self.screen.fill((0, 0, 0))
-            self.screen.blit(self.camera.saved_pic, (0, 0))
         
             #draw the text fields
             for box in self.text_boxes:
