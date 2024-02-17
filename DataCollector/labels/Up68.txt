@@ -1,0 +1,2 @@
+DIRECTION: Up
+TIME: 1_DAY
