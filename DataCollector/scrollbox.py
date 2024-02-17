@@ -185,21 +185,42 @@ class ScrollBox:
 
     
     def handle_click(self, mx, my):
+        
+        if self.rect.collidepoint((mx, my)):
+            scroll_x = self.scroll_rect.x
+            scroll_y = self.scroll_rect.y
 
-        scroll_x = self.scroll_rect.x
-        scroll_y = self.scroll_rect.y
+            x = mx
+            y = scroll_y + my
 
-        x = scroll_x + mx
-        scroll_y = self.scroll_rect.y
+            for row in self.items:
+
+                for item in row:
+                    if item.draw_cb == None and item.rect.colliderect(self.scroll_rect):
 
 
-        for row in self.items:
+                        overlap_rect = item.rect.clip(self.scroll_rect)
+                        off_y = overlap_rect.y - item.rect.y
+                        crop_rect = None
+                        cropped = None
+                        diff_y = 0
+                    
+                        if item.rect.y <= self.scroll_rect.y:
+                            crop_rect = pygame.Rect(0, off_y, item.rect.width, overlap_rect.height)
+                            cropped = item.item.subsurface(crop_rect)
+                            diff_y = item.rect.y
+                            screen_item_rect = pygame.Rect(item.rect.x, self.rect.y, cropped.get_width(), cropped.get_height())
+                            if screen_item_rect.collidepoint((mx, my)):
+                                print(item.item)
 
-            for item in row:
-
-                if item.rect.collidepoint((mx, my)):
-                    print(item.item)
-
+                        else:
+                            crop_rect = pygame.Rect(0, 0, item.rect.width, overlap_rect.height)
+                            cropped = item.item.subsurface(crop_rect)
+                            diff_y = item.rect.y - self.scroll_rect.y
+                            y = self.rect.y + diff_y
+                            screen_item_rect = pygame.Rect(item.rect.x, y, cropped.get_width(), cropped.get_height())
+                            if screen_item_rect.collidepoint((mx, my)):
+                                print(item.item)
 
             
     class ScrollItem:

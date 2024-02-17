@@ -21,7 +21,7 @@ class Graphics:
 
 
         
-        self.tutorial_font = pygame.font.Font(None, 36)
+        self.font = pygame.font.Font(None, 36)
         self.state = Graphics.State(Graphics.State.MENU_SCREEN)
 
         self.camera = Camera()
@@ -33,11 +33,16 @@ class Graphics:
         self.next_button = TextBox((0, 0, 100, 50), '>',  is_button=True, click_callback=lambda: self.next_button_click())
         self.prev_button = TextBox((0, 0, 100, 50), '<',  is_button=True, click_callback=lambda: self.prev_button_click())
 
-        
-        self.scroll_box = ScrollBox(0, 0, self.camera.X_RES, self.camera.Y_RES)
+        self.icon_size = 100
+        self.sb_width = Camera.X_RES - (1/20 * Camera.X_RES)
+        self.scroll_options = ScrollBox(0, 0, 1/20 * Camera.X_RES, Camera.Y_RES)
+        self.scroll_box = ScrollBox(1/20 * Camera.X_RES, 0, self.sb_width, Camera.Y_RES)
 
         self.time_ints = ["MIN", "HOUR", "DAY", "WEEK", "MONTH", "YEAR"]
 
+        menu_img = pygame.image.load("./pics/menu.png")
+        menu_img = pygame.transform.scale(menu_img, (self.icon_size, self.icon_size))
+        self.menu_button = TextBox((0, 0, 0, 0), '', is_button=True, image=menu_img, click_callback=lambda: self.init_menu_screen())
 
         self.dir_button = TextBox((0, 0, 100, 50), 'DIRECTION: Up',  is_button=True, click_callback=lambda: self.dir_button_click())
         self.time_button = TextBox((0, 0, 100, 50), "TIME: ")
@@ -49,7 +54,6 @@ class Graphics:
                                  color_active=pygame.Color('green'), 
                                  click_callback=lambda: self.camera.save_data(self))
         
-        self.icon_size = 100
         cam_img = pygame.image.load("./pics/camera.jpg")
         cam_img = pygame.transform.scale(cam_img, (self.icon_size, self.icon_size))
         self.crop_button = TextBox((0, 0, 0, 0), '', is_button=True, image=cam_img, click_callback=lambda: self.camera.capture_screen(self))
@@ -71,8 +75,9 @@ class Graphics:
         self.text_boxes = [self.dir_button, self.time_button, self.time_int, self.save_box]
         self.menu_boxes = [self.folder_button, self.edit_button, self.crop_button]
 
-        
+        self.num_files_txt = None 
 
+        
         self.width = 0
         self.height = 0
         os.environ['SDL_VIDEO_WINDOW_POS'] = "100,100"
@@ -146,6 +151,10 @@ class Graphics:
         self.state = Graphics.State.CROP_SCREEN
         self.camera.saved_pics = []
         self.camera.saved_scs = []
+
+        text = f"# imgs: {self.camera.count_files()} |=| # current: {len(self.camera.saved_scs)}"
+
+        self.num_files_txt = self.font.render(text, True, (240,230,140))
         
 
     
@@ -153,6 +162,10 @@ class Graphics:
         if self.state == Graphics.State.CROP_SCREEN:
 
             self.screen.blit(self.camera.chart_pic, (0, 0))
+
+            x = Camera.X_RES - self.num_files_txt.get_width()
+            #pygame.draw.rect(self.screen, (177, 177, 177), self.resize_box, 2)
+            self.screen.blit(self.num_files_txt, (x, 0))
             
             self.sc_box.draw(self.screen)
             
@@ -168,7 +181,6 @@ class Graphics:
         self.width = Camera.X_RES // 2
         self.height = h
         pygame.display.set_mode((self.width, self.height))
-
 
         #store necessary state and image
         self.state = Graphics.State.LABEL_SCREEN
@@ -193,7 +205,6 @@ class Graphics:
 
         l = len(self.camera.image_files)
         self.camera.cur_file_index = (self.camera.cur_file_index + 1) % l
-        print(self.camera.cur_file_index)
         self.init_edit_screen()
 
 
@@ -204,7 +215,6 @@ class Graphics:
             self.camera.cur_file_index = l - 1
         else:
             self.camera.cur_file_index -= 1
-        print(self.camera.cur_file_index)
         self.init_edit_screen()
 
 
@@ -251,16 +261,19 @@ class Graphics:
 
     def init_select_screen(self):
         self.scroll_box.clear()
+        self.scroll_options.clear()
         self.state = Graphics.State.SELECT_SCREEN
         pygame.display.set_mode((self.camera.X_RES, self.camera.Y_RES), pygame.FULLSCREEN)
         self.camera.init_files()
-        
+
+        self.scroll_options.add_item(self.save_box, self.menu_button.rect.size, draw_cb=lambda: self.menu_button.draw(self.screen))
+
 
         for s_file in self.camera.image_files:
             file = pygame.image.load("./images/" + s_file)
             self.scroll_box.add_item(file, (file.get_width(), file.get_height()))
         
-        self.scroll_box.add_item(self.save_box, (self.save_box.rect.width, self.save_box.rect.height), draw_cb=lambda: self.save_box.draw(self.screen))
+        self.scroll_box.add_item(self.save_box, self.save_box.rect.size, draw_cb=lambda: self.save_box.draw(self.screen))
         
         
     
@@ -268,6 +281,7 @@ class Graphics:
         if self.state == Graphics.State.SELECT_SCREEN:
             self.screen.fill((255, 255, 255))
             self.scroll_box.draw(self.screen)
+            self.scroll_options.draw(self.screen)
             
         
     def draw(self):
@@ -300,6 +314,7 @@ class Graphics:
         if self.state == Graphics.State.SELECT_SCREEN:
             self.scroll_box.handle_events(event)
             self.save_box.handle_events(event)
+            self.menu_button.handle_events(event)
 
         
 
