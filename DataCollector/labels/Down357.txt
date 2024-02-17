@@ -1,0 +1,2 @@
+DIRECTION: Down
+TIME: 5_MIN

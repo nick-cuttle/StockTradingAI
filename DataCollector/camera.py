@@ -97,11 +97,17 @@ class Camera:
         w = g.sc_box.rect.width
         h = g.sc_box.rect.height
 
+
+
         cropped_sc = self.chart_sc.crop((g.sc_box.rect.x, g.sc_box.rect.y, g.sc_box.rect.x + w, g.sc_box.rect.y + h))
         cropped_pic = self.convert_screenshot(cropped_sc)
 
         self.saved_pics.append(cropped_pic)
         self.saved_scs.append(cropped_sc)
+
+        text = f"# imgs: {self.count_files()} |=| # current:{len(self.saved_scs)}"
+
+        g.num_files_txt = g.font.render(text, True, (240,230,140))
         #g.init_label_screen(cropped_sc, cropped_pic)
 
 
