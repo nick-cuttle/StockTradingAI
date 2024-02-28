@@ -16,6 +16,7 @@ class Graphics:
         LABEL_SCREEN = auto()
         EDIT_SCREEN = auto()
         SELECT_SCREEN = auto()
+        API_SCREEN = auto()
 
     def __init__(self):
 
@@ -38,42 +39,64 @@ class Graphics:
         self.scroll_options = ScrollBox(0, 0, 1/20 * Camera.X_RES, Camera.Y_RES)
         self.scroll_box = ScrollBox(1/20 * Camera.X_RES, 0, self.sb_width, Camera.Y_RES)
 
-        self.time_ints = ["MIN", "HOUR", "DAY", "WEEK", "MONTH", "YEAR"]
+        self.time_ints = ["second", "minute", "hour", "day", "week", "month", "quarter", "year"]
 
         menu_img = pygame.image.load("./pics/menu.png")
         menu_img = pygame.transform.scale(menu_img, (self.icon_size, self.icon_size))
         self.menu_button = TextBox((0, 0, 0, 0), '', is_button=True, image=menu_img, click_callback=lambda: self.init_menu_screen())
 
         self.dir_button = TextBox((0, 0, 100, 50), 'DIRECTION: Up',  is_button=True, click_callback=lambda: self.dir_button_click())
-        self.time_button = TextBox((0, 0, 100, 50), "TIME: ")
-        self.time_int = TextBox((0, 0, 100, 50), 'MIN',  is_button=True, click_callback=lambda: self.cycle_time_int())
+
+        #API SCREEN BUTTONS
+        self.run_api_button = TextBox((0, 0, 100, 50), 'RUN API', 
+                                      is_button=True, 
+                                      click_callback=lambda: self.camera.run_api(self),
+                                      color_inactive=pygame.Color('green'), 
+                                        color_active=pygame.Color('green'))
+        self.symbol_button = TextBox((0, 0, 100, 50), 'SYMBOL: all')
+        self.from_date_button = TextBox((0, 0, 100, 50), 'FROM_DATE: 2004-01-01')
+        self.to_date_button = TextBox((0, 0, 100, 50), 'TO_DATE: 2004-01-03')
+        self.time_mult_button = TextBox((0, 0, 100, 50), "TIME_MULT: 1")
+        self.time_int = TextBox((0, 0, 100, 50), self.time_ints[0],  is_button=True, click_callback=lambda: self.cycle_time_int())
         self.time_index = 0
+        self.num_pics_button = TextBox((0, 0, 100, 50), 'NUM_PICS: 50000')
 
         self.save_box = TextBox((0, 0, 100, 50), "Save", is_button=True,
                                  color_inactive=pygame.Color('green'), 
                                  color_active=pygame.Color('green'), 
                                  click_callback=lambda: self.camera.save_data(self))
         
+        #API BUTTON
+        api_img = pygame.image.load("./pics/api.png")
+        api_img = pygame.transform.scale(api_img, (self.icon_size, self.icon_size))
+        self.api_button = TextBox((0, 0, 0, 0), '', is_button=True, image=api_img, click_callback=lambda: self.init_api_screen())
+        
+        #CROP BUTTON
         cam_img = pygame.image.load("./pics/camera.jpg")
         cam_img = pygame.transform.scale(cam_img, (self.icon_size, self.icon_size))
         self.crop_button = TextBox((0, 0, 0, 0), '', is_button=True, image=cam_img, click_callback=lambda: self.camera.capture_screen(self))
         
+        #EDIT BUTTON
         edit_img = pygame.image.load("./pics/edit_photo.png")
         edit_img = pygame.transform.scale(edit_img, (self.icon_size, self.icon_size))
         self.edit_button = TextBox((0, 0, 0, 0), '', is_button=True, image=edit_img, click_callback=lambda: self.init_edit_screen())
         
-        
+        #FOLDER BUTTON
         folder_img = pygame.image.load("./pics/folder_icon.png")
         folder_img = pygame.transform.scale(folder_img, (self.icon_size, self.icon_size))
         self.folder_button = TextBox((0, 0, 0, 0), '', is_button=True, image=folder_img, click_callback=lambda: self.init_select_screen())
         
         self.e_key_pressed = False
         self.s_key_pressed = False
-        self.label_boxes = [self.dir_button, self.time_button, self.time_int]
+        self.label_boxes = [self.dir_button, self.time_mult_button, self.time_int]
         
         self.edit_boxes = self.label_boxes.copy() + [self.prev_button, self.next_button, self.save_box]
-        self.text_boxes = [self.dir_button, self.time_button, self.time_int, self.save_box]
-        self.menu_boxes = [self.folder_button, self.edit_button, self.crop_button]
+        self.text_boxes = [self.dir_button, self.time_mult_button, self.time_int, self.save_box]
+        self.menu_boxes = [self.folder_button, self.edit_button, self.crop_button, self.api_button]
+        self.api_boxes = [self.symbol_button, self.from_date_button, self.to_date_button, self.time_mult_button, 
+                          self.time_int, 
+                          self.num_pics_button, 
+                          self.run_api_button]
 
         self.num_files_txt = None 
 
@@ -104,6 +127,28 @@ class Graphics:
             self.dir_button.text = u
         
         self.dir_button.txt_surface = self.dir_button.font.render(self.dir_button.text, True, (0, 0, 0))
+    
+    def init_api_screen(self):
+        self.state = Graphics.State.API_SCREEN
+        spacing = 10
+
+        pygame.display.set_mode((Camera.X_RES, Camera.Y_RES))
+
+        x = spacing
+        y = spacing
+
+        for box in self.api_boxes:
+            box.rect.x = x
+            box.rect.y = y
+            y += self.icon_size + spacing
+    
+    def draw_api_screen(self):
+        if self.state == Graphics.State.API_SCREEN:
+            self.screen.fill((0, 0, 0))
+        
+            #draw the text fields
+            for box in self.api_boxes:
+                box.draw(self.screen)
 
 
     def init_menu_screen(self):
@@ -137,9 +182,8 @@ class Graphics:
     def draw_menu_screen(self):
         if self.state == Graphics.State.MENU_SCREEN:
             self.screen.fill((255, 255 ,255))
-            self.folder_button.draw(self.screen)
-            self.edit_button.draw(self.screen)
-            self.crop_button.draw(self.screen)
+            for box in self.menu_boxes:
+                box.draw(self.screen)
 
 
     
@@ -290,6 +334,7 @@ class Graphics:
         self.draw_label_screen()
         self.draw_edit_screen()
         self.draw_select_screen()
+        self.draw_api_screen()
 
         pygame.display.flip()
 
@@ -297,9 +342,8 @@ class Graphics:
     def handle_events(self, event):
         
         if self.state == Graphics.State.MENU_SCREEN:
-            self.folder_button.handle_events(event)
-            self.edit_button.handle_events(event)
-            self.crop_button.handle_events(event)
+            for box in self.menu_boxes:
+                box.handle_events(event)
                 
         if self.state == Graphics.State.CROP_SCREEN:
             self.sc_box.handle_events(event)
@@ -309,6 +353,10 @@ class Graphics:
                 box.handle_events(event)
         if self.state == Graphics.State.LABEL_SCREEN:
             for box in self.text_boxes:
+                box.handle_events(event)
+                
+        if self.state == Graphics.State.API_SCREEN:
+            for box in self.api_boxes:
                 box.handle_events(event)
         
         if self.state == Graphics.State.SELECT_SCREEN:

@@ -3,6 +3,7 @@ import os
 import pygame
 import sys
 import ctypes
+import subprocess
 
 from PIL import Image
 
@@ -61,10 +62,10 @@ class Camera:
         return pygame_img
 
 
-    def count_files(self):
+    def count_files(self, dir="./images"):
         try:
             # Get the list of files in the directory
-            files = os.listdir("./images")
+            files = os.listdir(dir)
 
             # Count the number of files
             file_count = len(files)
@@ -109,6 +110,35 @@ class Camera:
 
         g.num_files_txt = g.font.render(text, True, (240,230,140))
         #g.init_label_screen(cropped_sc, cropped_pic)
+
+    
+    def run_api(self, g):
+        s = g.symbol_button.text.split(" ")[1]
+        fd = g.from_date_button.text.split(" ")[1]
+        td = g.to_date_button.text.split(" ")[1]
+        ti = g.time_int.text
+        tm = g.time_mult_button.text.split(" ")[1]
+        n = g.num_pics_button.text.split(" ")[1]
+        command = ["python", "api.py", "-s", s, "-fd", fd, "-td", td, "-tm", tm, "-ti", ti, "-n", n]
+
+        subprocess.check_call(command, shell=True, stdout=sys.stdout, stderr=subprocess.STDOUT)
+
+
+    def create_label_file(self, labels=[], dir="./labels/"):
+
+        if labels == []:
+            return
+        label = labels[0].split(" ")[1]
+        fcount = self.count_files(dir)
+        fcount += 1
+
+        fname = dir + label + str(fcount) + ".txt"
+
+        label_file = open(fname, "w")
+        for label in labels:
+            label_file.write(label + "\n")
+
+        label_file.close()
 
 
     def save_data(self, g):

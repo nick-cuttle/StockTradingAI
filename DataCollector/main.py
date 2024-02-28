@@ -30,17 +30,17 @@ if __name__ == "__main__":
             elif not keys[pygame.K_c]:
                 g.camera.c_key_pressed = False
             
-            if keys[pygame.K_e] and not g.e_key_pressed:
-                g.e_key_pressed = True
-                g.init_edit_screen()
-            elif not keys[pygame.K_e]:
-                g.e_key_pressed = False
+            # if keys[pygame.K_e] and not g.e_key_pressed:
+            #     g.e_key_pressed = True
+            #     g.init_edit_screen()
+            # elif not keys[pygame.K_e]:
+            #     g.e_key_pressed = False
             
-            if keys[pygame.K_s] and not g.s_key_pressed:
-                g.s_key_pressed = True
-                g.init_select_screen()
-            elif not keys[pygame.K_e]:
-                g.s_key_pressed = False
+            # if keys[pygame.K_s] and not g.s_key_pressed:
+            #     g.s_key_pressed = True
+            #     g.init_select_screen()
+            # elif not keys[pygame.K_e]:
+            #     g.s_key_pressed = False
 
             if keys[pygame.K_RETURN] and not g.camera.enter_key_pressed:
                 g.camera.enter_key_pressed = True
