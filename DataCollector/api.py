@@ -24,6 +24,17 @@ RESET = '\033[0m'  # Reset color to default
 GREEN = '\033[92m'
 YELLOW = '\033[93m'
 BLUE = '\033[94m'
+APIKEY = "J6wnkSNzZpMvfBqBORVBxjMjhLrZQ7lX"
+IMG_DIR = "./test_imgs/"
+CUR_DATE = datetime.datetime.now()
+TIME_INT = None
+TIME_MULT = None
+SYMBOL = None
+OG_FROM_DATE = None
+OG_TO_DATE = None
+FROM_DATE = None
+TO_DATE = None
+NUM_PICS = None
 
 #Class to represent a candle
 class Candle():
@@ -39,6 +50,14 @@ class Candle():
 
     def __repr__(self):
         return f"(o:{self.open}, c:{self.close}, h:{self.high}, l:{self.low}, v:{self.vol}, t:{self.time}, d:{self.date})"
+    
+
+# def generate_urls():
+
+
+
+
+
 
 def main():
     # Create ArgumentParser object
@@ -82,19 +101,21 @@ def main():
     from_date_obj = datetime.datetime.strptime(FROM_DATE, '%Y-%m-%d')
     to_date_obj = datetime.datetime.strptime(TO_DATE, '%Y-%m-%d')
     date_diff = to_date_obj - from_date_obj
-    APIKEY = "J6wnkSNzZpMvfBqBORVBxjMjhLrZQ7lX"
-    IMG_DIR = "./test_imgs/"
     LIMIT = 50000
-    CUR_DATE = datetime.datetime.now()
 
     matplotlib.use('Agg')
     #Continuously loop while we still have pics to take or all symbols aren't done.
-    while NUM_PICS > 0 and (SYMBOL_INDEX <= len(SYMBOLS) - 1):
+    while NUM_PICS > 0 and (SYMBOL_INDEX - 1 < len(SYMBOLS)):
 
         url = f"https://financialmodelingprep.com/api/v3/historical-chart/{TIME_MULT}{TIME_INT}/{SYMBOL}?from={FROM_DATE}&to={TO_DATE}&apikey={APIKEY}"
 
         r = requests.get(url)
-        json_data = r.json()
+
+        try:
+            json_data = r.json()
+        except json.JSONDecodeError as e:
+            print(f"JSON Decode Error: {e}")
+                # Handle accordingly
 
         if (from_date_obj > CUR_DATE):
             SYMBOL_INDEX += 1
